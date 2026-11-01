@@ -532,6 +532,14 @@ def test_calendar_invalid_date_skipped_by_findall():
     assert results[0][0] == date(2024, 1, 15)
 
 
+def test_calendar_invalid_date_skipped_by_search():
+    # search() must not give up on the first structurally-matching but
+    # calendar-invalid date; it should keep scanning for a later valid one,
+    # same as findall() already does.
+    result = parse.search("{:%Y-%m-%d}", "2024-02-30 then 2024-01-15")
+    assert result[0] == date(2024, 1, 15)
+
+
 def test_flexible_dates_inferred_year_day_of_year(monkeypatch):
     _freeze_year(monkeypatch, 2024)
     assert parse.parse("{:%j}", "60")[0] == date(2024, 2, 29)

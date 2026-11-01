@@ -550,17 +550,21 @@ class Parser(object):
         """
         if endpos is None:
             endpos = len(string)
-        m = self._search_re.search(string, pos, endpos)
-        if m is None:
-            return None
+        while True:
+            m = self._search_re.search(string, pos, endpos)
+            if m is None:
+                return None
 
-        if evaluate_result:
+            if not evaluate_result:
+                return Match(self, m)
+
             try:
                 return self.evaluate_result(m)
             except _NoMatchError:
-                return None
-        else:
-            return Match(self, m)
+                # structurally matched but failed a type conversion
+                # (e.g. a calendar-invalid date); keep searching
+                pos = m.end()
+                continue
 
     def findall(
         self, string, pos=0, endpos=None, extra_types=None, evaluate_result=True
